@@ -1,0 +1,288 @@
+<?php ob_start();?>
+<?php include 'include/header.php';?>
+<?php include 'include/sidebar.php';?>
+<?php include 'include/main.php';?>
+
+
+
+<link rel="stylesheet" href="../css/bootstrap-datepicker.css.map">
+  <link rel="stylesheet" href="css/bootstrap.min.css.map">
+  <script src="../js/bootstrap-datepicker.js"></script>
+ 
+  <script src="../js/jquery.min.js"></script>
+  <script src="../js/jquery.js"></script>
+   <script src="../js/jquery.validate.min.js"></script>
+   <script src="../js/jquery.validate.js"></script>
+   <!-- validate form-->
+
+   <script src="../js/validate_form/dist/jquery.validate.min.js"></script>
+   <script src="../js/validate_form/dist/localization/messages_vi.js"></script>
+<!--   Date-->
+   <script type="text/javascript">
+     $(function (){
+                $("#datepicker").datepicker({
+                    autoclose:true,
+                    todayHighlight:true,
+                }).datepicker('update', new Date());
+            });
+   </script>
+   <script type="text/javascript">
+        
+    $(document).ready(function (){
+          $('#formtt').validate(
+                  {
+                     rules:{
+                         
+                     },
+                      sodt:{range [9,11]}
+                  }
+                );
+          
+          
+       });
+   </script>
+  
+  
+<style>
+    .them
+    {text-align: center;}
+    .dangki
+    {
+        text-align: center;
+    }
+    .require
+    {
+        color: red;
+        
+    }
+    .thanhcong
+    {
+        color :green;
+        text-align: center;
+    }
+   .anh_r
+   {
+        border: solid #8bf5f0 3px;
+        height: 200px;
+        width: 350px;
+   }
+</style>
+  <?php 
+    
+    // lay du lieu do vao tai khoan va Kiem tra Bien
+         $query_m="SELECT matkhau,email FROM db_user WHERE id={$_SESSION['uid']}";
+            $result_m= mysqli_query($dbc,$query_m);
+            kt_query($result_m, $query_m);
+            $info = mysqli_fetch_assoc($result_m);
+
+        if($_SERVER['REQUEST_METHOD']=='POST')
+        {
+            $error=array();
+             $error2=array();
+              $error3=array();
+           if(filter_var(($_POST['email']),FILTER_VALIDATE_EMAIL)==TRUE)
+           {
+               $email= mysqli_real_escape_string($dbc,$_POST['email']);
+           }
+           else
+           {
+               $error[]='email';
+           }
+            if(empty($_POST['matkhaucu']))
+            {
+                $error[]='matkhaucu';
+            }
+            else {
+                   $matkhaucu=md5(trim($_POST['matkhaucu']));
+            }
+                if(empty($_POST['matkhaumoi']))
+            {
+                $error[]='matkhaumoi';
+            }
+            else {
+                   $matkhaucu=md5(trim($_POST['matkhaumoi']));
+            }
+         
+            if(md5(trim($_POST['matkhaucu'])) != $info['matkhau'])
+            {
+                $error2[]='matkhaucu';
+            }
+              if($_POST['email'] != $info['email'])
+            {
+                $error3[]='email';
+            }
+            if(trim($_POST['matkhaumoi']) != trim($_POST['cmatkhau']))
+            {
+                 $error[]='cmatkhau';
+            }
+       
+            
+          
+            
+            if(!empty($error))
+            {
+                $message= "<p class='require'>Bạn Phải Điền Đầy Đủ Thông Tin</p>";
+            }
+            else {
+                if(!empty($error2))
+                {
+                    $message1="<p class='require'>Mật Khẩu Cũ Không Đúng</p>";
+                    
+                }
+                
+                else 
+                    {
+                        if(!empty($error3))
+                        {
+                              $message2="<p class='require'>Email Không Đúng Nha !!</p>";
+                        }
+                        else {
+                             // lay mat khau tren dua tren id cua Userid ng dang nhap hien tai
+                            $query_mk="SELECT id,matkhau FROM db_user WHERE matkhau=md5('{$_POST['matkhaucu']}') AND id={$_SESSION['uid']}";
+                            $result_mk= mysqli_query($dbc, $query_mk);
+                            kt_query($result_mk, $query_mk);
+                            if(mysqli_num_rows($result_mk)!=1)
+                            {
+                                    $error[]="Dữ Liệu Lỗi Không Đổi Được Mật Khẩu";
+                            }
+                            else 
+                             {
+                                 $query_up_pass="UPDATE db_user SET matkhau=md5('{$_POST['matkhaumoi']}') WHERE id={$_SESSION['uid']} ";
+                                                    $result_up_pass= mysqli_query($dbc,$query_up_pass);
+                                                    kt_query($result_up_pass, $query_up_pass);
+                                  $message3= "<p class='thanhcong'>Đổi Mật Khẩu Thành Công</p>";
+                            }  
+                        }
+                       
+                   
+                 }
+               
+                   
+            }
+        }
+         
+        
+        
+        
+    ?>
+   
+              
+            <div class="box-header with-border">
+              <h2 class="them">Đổi Mật Khẩu</h2>
+            </div>
+            <!-- /.box-header -->
+            <!-- form start -->
+            <form class="form-horizontal" method="POST" name="formtt" id="formtt" enctype="multipart/form-data">
+              <div class="box-body">
+                <div class="form-group">
+                  <label for="inputEmail3" class="col-sm-2 control-label" >Tài Khoản </label>
+
+                  <div  class="col-sm-10">
+                      <input type="text" class="form-control"  name="taikhoan" id="taikhoan" value="<?php if(isset($tk_info)){echo $tk_info['taikhoan'];}?> " readonly placeholder="Tài Khoản"/>
+                 
+                  <span id="taikhoan_error"></span>
+                  </div>
+                </div>
+             <div class="form-group">
+                  <label for="inputPassword3" class="col-sm-2 control-label">Email</label>
+
+                  <div class="col-sm-10">
+                      <input type="email" class="form-control"  name="email" id="email" placeholder="Nhập Email Đắng Ký" value=""/>
+                   <?php 
+                       if(isset($error) && in_array('email', $error))
+                       {
+                            echo "<p class='require'>Bạn Chưa Nhập Email</p>";
+                       }
+                      if(isset($message2))
+                      {
+                          echo $message2;
+                      }
+                          
+                    ?>
+                 
+                    <span id="email_error"></span>
+                  </div>
+                </div>
+                     <div class="form-group">
+                  <label for="inputEmail3" class="col-sm-2 control-label" >Mật Khẩu Cũ</label>
+
+                  <div  class="col-sm-10">
+                      <input type="password" class="form-control"  minlength="6" name="matkhaucu" id="matkhaucu" value="" placeholder="Nhập Mật Khẩu Hiện Tại Nha !!"/>
+                      <?php 
+                        if(isset($error) && in_array('matkhaucu',$error))
+                        {
+                            echo "<p class='require'>Bạn Chưa Điền Mật Khẩu</p>";
+                            
+                        }
+                        if(isset($message1))
+                        {
+                            echo $message1;
+                        }
+//                      
+                      ?>
+                  <span id="taikhoan_error"></span>
+                  </div>
+                </div>
+                        <div class="form-group">
+                  <label for="inputEmail3" class="col-sm-2 control-label" >Mật Khẩu Mới</label>
+
+                  <div  class="col-sm-10">
+                      <input type="password" class="form-control"  minlength="6" name="matkhaumoi" id="matkhaumoi" value="" placeholder="Nhập Mật Khẩu Mới"/>
+                      <?php 
+                        if(isset($error) && in_array('matkhaumoi',$error))
+                        {
+                            echo "<p class='require'>Bạn Chưa Điền Mật Khẩu </p>";
+                        }
+                      ?>
+                  <span id="taikhoan_error"></span>
+                  </div>
+                </div>
+                       <div class="form-group">
+                  <label for="inputEmail3" class="col-sm-2 control-label" >Xác Nhận Mật Khẩu</label>
+
+                  <div  class="col-sm-10">
+                      <input type="password" class="form-control" minlength="6" name="cmatkhau" id="cmatkhau" value="" placeholder="Mật Khẩu Mới Phải Giống Nhau Nha !!"/>
+                  <?php 
+                        if(isset($error) && in_array('cmatkhau',$error))
+                        {
+                            echo "<p class='require'>Mật Khẩu Không Giống Nhau</p>";
+                        }
+                      ?>
+                  <span id="taikhoan_error"></span>
+                  </div>
+                </div>
+
+                   
+                <div class="them">
+                       <?php 
+                 
+              if(isset($message))
+              {
+                  echo $message;
+              }
+                if(isset($message3))
+              {
+                  echo $message3;
+              }
+                ?>
+                </div>
+              
+             
+                
+              <!-- /.box-body -->
+              <div class="box-footer">
+                  
+                  <button id="submit" name="submit" type="submit" class="btn btn-info center-block" >Đôi Mật Khẩu</button>
+                 
+                  
+              </div>
+            
+              </div>
+              <!-- /.box-footer -->
+            </form>
+       
+     
+          
+<?php include 'include/footer.php';?>
+<?php include 'include/control_sidebar.php';?>
+<?php ob_flush();?>
